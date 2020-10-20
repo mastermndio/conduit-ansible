@@ -1,0 +1,44 @@
+- hosts: webservers
+  become: yes
+  
+  tasks:
+    - name: Update Server
+      apt: 
+        update_cache: yes
+        force_apt_get: yes
+        cache_valid_time: 3600
+
+    - name: Ensure docker is installed 
+      apt: 
+        name: docker.io 
+        state: present
+
+    - name: Ensure nginx is stopped
+      systemd: 
+        name: nginx
+        state: stopped
+
+    - name: Ensure nginx is removed
+      apt: 
+        name: nginx
+        state: absent
+
+    - name: Ensure docker is installed 
+      apt: 
+        name: python3-docker
+        state: present
+
+    - name: Pull NGINX Docker image
+      docker_image:
+        name: "nginx"
+        source: pull
+
+    - name: Create default containers
+      docker_container:
+        name: "nginx-proxy"
+        image: "nginx"
+        state: started
+        expose:
+          - "80"
+        ports:
+          - "80:80"
